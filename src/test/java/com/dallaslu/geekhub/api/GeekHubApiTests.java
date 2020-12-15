@@ -20,7 +20,7 @@ public class GeekHubApiTests {
 	public void init() {
 		gh = GeekHubApi.builder()
 				.httpHelper(HttpClientHelper.create(GeekHubApi.DEFAULT_URL_BASE, GeekHubApi.USER_AGENT))
-				.identityProvider(GeekHubCommonAuth.builder().dataPath("<data-path>").username("dallaslu")
+				.identityProvider(GeekHubCommonAuth.builder().dataPath("D:\\gh-api").username("dallaslu")
 						.password("<password>").build())
 				.build();
 		gh.init();
@@ -29,14 +29,14 @@ public class GeekHubApiTests {
 	@Test
 	@DisplayName("分子页面标题")
 	public void simpleTitleTest() {
-		GeekHubApiResult<MoleculePost> apiResult = gh.fetchPage(PageDefination.MOLECULE, "1");
+		GeekHubApiResult<MoleculePost> apiResult = gh.fetchPost(PageDefination.MOLECULE, "1");
 		Assertions.assertTrue(apiResult.getContent().getTitle().contains("AirPods"));
 	}
 
 	@Test
 	@DisplayName("Poster")
 	public void simplePosterTest() {
-		GeekHubApiResult<GeekHubPost> apiResult = gh.fetchPage(PageDefination.DEFAULT_POST, "2296");
+		GeekHubApiResult<GeekHubPost> apiResult = gh.fetchPost(PageDefination.DEFAULT_POST, "2296");
 		Assertions.assertTrue(apiResult.getContent().getPoster().equals("37丫37"));
 	}
 
@@ -44,5 +44,12 @@ public class GeekHubApiTests {
 	@DisplayName("CheckIn")
 	public void checkInsTest() {
 		Assertions.assertTrue(gh.checkins());
+	}
+
+	@Test
+	@DisplayName("Cable")
+	public void cableTest() {
+		gh.addCableListener(i -> {
+		});
 	}
 }

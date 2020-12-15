@@ -1,19 +1,19 @@
 package com.dallaslu.geekhub.api.page;
 
-import java.util.Map;
+import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import com.dallaslu.geekhub.api.utils.ParseHelper;
 
 import lombok.Getter;
 
 @Getter
 public class MoleculePost extends GeekHubPost {
-
-	public static final String ITEM = "产品名称";
-	public static final String VALUE = "分子价值";
-	public static final String SPECIAL_VALUE = "活动价格";
-	public static final String COUNT = "分子数量";
-	public static final String SECONDS = "剩余秒数";
-	public static final String LUCKY_FLOORS = "分子楼层";
-
 	private String item;
 	private double value;
 	private double specialValue;
@@ -21,12 +21,59 @@ public class MoleculePost extends GeekHubPost {
 	private int seconds;
 	private String[] luckyFloors;
 
-	public void fromInfo(Map<String, Object> info) {
-		this.item = (String) info.get(ITEM);
-		this.value = (double) info.get(VALUE);
-		this.specialValue = (double) info.get(SPECIAL_VALUE);
-		this.count = (int) info.get(COUNT);
-		this.seconds = (int) info.get(SECONDS);
-		this.luckyFloors = (String[]) info.get(LUCKY_FLOORS);
+	@Override
+	public void parse(Document doc) {
+		super.parse(doc);
+		Elements boxes = doc.select("main>div");
+		Element articleE = boxes.get(0);
+		Elements specialEs = articleE.select("div.border>div.flex>div");
+
+		for (Element infoE : specialEs.get(0).select("div.flex")) {
+			String text = infoE.text();
+			if (text.matches("产品名称.*")) {
+				this.item = text.replaceFirst("产品名称\\s*", "").trim();
+			} else if (text.matches("分子价值.*")) {
+				this.value = Double.parseDouble(text.replaceFirst("分子价值 ¥ \\s*", "").trim());
+			} else if (text.matches("活动价格.*")) {
+				this.specialValue = Double.parseDouble(text.replaceFirst("活动价格 ¥ \\s*", "").trim());
+			} else if (text.matches("分子数量.*")) {
+				this.count = Integer.parseInt(text.replaceFirst("分子数量 \\(x\\)\\s*", "").trim());
+			}
+		}
+
+		int seconds = 0;
+		{
+			Element countDownE = articleE.selectFirst("#count-down");
+			if (countDownE != null) {
+				String dataSeconds = countDownE.attr("data-seconds");
+				if (dataSeconds != null) {
+					seconds = Integer.parseInt(dataSeconds);
+				}
+			}
+		}
+
+		String[] luckyFloors = new String[0];
+		if (seconds == 0) {
+			String oneLineHtml = doc.html().replace("\n", "");
+			// TODO 优化避免 replaceAll("\n", "")
+			Pattern p = Pattern.compile(
+					"<span class=\"[\\w_\\-\\s]+\">分子楼层:</span>\\s*<span class=\"[\\w_\\-\\s]+?\">\\s*((?:\\d+, )*\\d+)\\s*</span>");
+			Matcher m = p.matcher(oneLineHtml);
+			if (m.find()) {
+				String foo = m.group(1);
+				luckyFloors = foo.split(", ");
+				seconds = -1;
+			}
+
+			Pattern p2 = Pattern.compile("<div class=\"[\\w_\\-\\s]+\">\\s*抢分子已经?于\\s*(大约)?\\s*(\\d+\\s*小时前)结束");
+			Matcher m2 = p2.matcher(oneLineHtml);
+			if (m2.find()) {
+				Date settlementTime = ParseHelper.parseDate(m2.group(2));
+				seconds = (int) ((settlementTime.getTime() - System.currentTimeMillis()) / 1000L);
+			}
+		}
+
+		this.seconds = seconds;
+		this.luckyFloors = luckyFloors;
 	}
 }

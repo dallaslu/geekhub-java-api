@@ -20,6 +20,7 @@ import org.apache.http.cookie.Cookie;
 
 import com.dallaslu.geekhub.api.CsrfData;
 import com.dallaslu.geekhub.api.GeekHubApi;
+import com.dallaslu.geekhub.api.utils.ParseHelper;
 import com.dallaslu.utils.http.HttpHelper.ResponseResult;
 
 import lombok.Builder;
@@ -43,7 +44,7 @@ public class GeekHubCommonAuth implements GeekHubIdentityProvider {
 		}
 		ResponseResult<String> result = api.fetchPage("/users/sign_in", false);
 		if (result.isSuccess() && result.getStatus() == HttpStatus.SC_OK) {
-			CsrfData csrfData = GeekHubApi.parseCsrfData(result.getContent());
+			CsrfData csrfData = ParseHelper.parseCsrfData(result.getContent());
 
 			String fileName = UUID.randomUUID().toString() + ".jpg";
 			try {
