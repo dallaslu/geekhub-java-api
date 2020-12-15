@@ -27,6 +27,8 @@ public class PageDefination<T extends GeekHubPage> {
 	public static final PageDefination<GeekHubProductList> GBIT_STORE = register("GbitStore", "gbit_store", "福利社",
 			GeekHubProductList.class);
 	public static final PageDefination<GeekHubShop> SHOP = register("Shop", "shop", "商店", GeekHubShop.class);
+	public static final PageDefination<GeekHubUserProfile> USER = register("User", "u", "用户资料",
+			GeekHubUserProfile.class);
 
 	public static <P extends GeekHubPage> PageDefination<P> register(String type, String slug, String name,
 			Class<P> pageClass) {

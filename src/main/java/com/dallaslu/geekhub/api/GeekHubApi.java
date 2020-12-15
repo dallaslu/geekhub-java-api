@@ -23,10 +23,12 @@ import org.jsoup.nodes.Element;
 
 import com.dallaslu.geekhub.api.auth.GeekHubIdentityProvider;
 import com.dallaslu.geekhub.api.model.CableUpdate;
+import com.dallaslu.geekhub.api.model.GeekHubComment;
 import com.dallaslu.geekhub.api.model.GeekHubPostItem;
 import com.dallaslu.geekhub.api.page.GeekHubPage;
 import com.dallaslu.geekhub.api.page.GeekHubPost;
 import com.dallaslu.geekhub.api.page.GeekHubPostList;
+import com.dallaslu.geekhub.api.page.GeekHubUserProfile;
 import com.dallaslu.geekhub.api.page.PageDefination;
 import com.dallaslu.geekhub.api.utils.ParseHelper;
 import com.dallaslu.utils.http.HttpHelper;
@@ -253,6 +255,18 @@ public class GeekHubApi {
 	}
 
 	/**
+	 * 获取用户资料
+	 * 
+	 * @param username
+	 *            用户名
+	 * @return 解析后的内容
+	 */
+	public GeekHubApiResult<GeekHubUserProfile> fetchUserProfile(String username) {
+		String url = String.format("/u/%s", webUrlBase, username);
+		return fetchPage(PageDefination.USER, url);
+	}
+
+	/**
 	 * 评论
 	 * 
 	 * @param postType
@@ -423,7 +437,6 @@ public class GeekHubApi {
 			@Override
 			public void onOpen(ServerHandshake handshakedata) {
 				log.info("connected");
-
 			}
 
 			@SuppressWarnings("unchecked")
@@ -471,9 +484,16 @@ public class GeekHubApi {
 							CableUpdate update = new CableUpdate();
 							List<Map<String, Object>> insertAdjacenHtmlJson = (List<Map<String, Object>>) operations
 									.get("insertAdjacentHtml");
+
+							List<GeekHubComment> comments = new ArrayList<>();
 							for (Map<String, Object> insertAdjacenHtml : insertAdjacenHtmlJson) {
 								String html = (String) insertAdjacenHtml.get("html");
-								// TODO try parse to comment
+								Document doc = Jsoup.parse(html);
+								Element ce = doc.selectFirst("div");
+								GeekHubComment c = GeekHubPost.parseComment(ce);
+								if (c != null) {
+									comments.add(c);
+								}
 							}
 
 							List<GeekHubPostItem> items = new ArrayList<>();
@@ -491,7 +511,10 @@ public class GeekHubApi {
 									}
 								}
 							}
+
+							update.setComments(comments);
 							update.setPosts(items);
+
 							log.info("recieve update.");
 							for (Consumer<CableUpdate> listenr : gh.listeners) {
 								listenr.accept(update);

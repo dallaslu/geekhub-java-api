@@ -10,6 +10,16 @@ import com.dallaslu.geekhub.api.CsrfData;
 import com.dallaslu.geekhub.api.model.GeekHubClub;
 
 public class ParseHelper {
+	public static boolean parseLogon(String html) {
+		boolean logon = false;
+		{
+			Pattern p = Pattern.compile("href=\"/users/sign_out\">退出</a>");
+			Matcher m = p.matcher(html);
+			logon = m.find();
+		}
+		return logon;
+	}
+
 	public static String parseUserLink(Element userLink) {
 		return userLink.attr("href").replaceFirst("/u/", "");
 	}

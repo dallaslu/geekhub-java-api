@@ -94,55 +94,61 @@ public class GeekHubPost extends GeekHubPage {
 		comments = new ArrayList<>();
 		Elements commentEs = commentE.select("div.comment-list");
 		for (Element ce : commentEs) {
-			GeekHubComment c = new GeekHubComment();
-			String cid = ce.id();
-			c.setId(cid.replaceFirst("comment_", ""));
-
-			Element cMain = ce.selectFirst("div.flex>div.action-list-parent");
-
-			Elements metas = cMain.select("div.flex>div.inline-flex");
-
-			Element userLink = metas.get(0).selectFirst("a[href^=/u/]");
-			c.setUser(ParseHelper.parseUserLink(userLink));
-
-			{
-				List<String> foo = new ArrayList<>();
-				Elements metalEs = metas.get(0).select("span>img");
-				for (Element mE : metalEs) {
-					foo.add(mE.attr("title"));
-				}
-				c.setUserMedal(foo.toArray(new String[0]));
+			GeekHubComment c = parseComment(ce);
+			if (c != null) {
+				comments.add(c);
 			}
-
-			Elements metaSpanEs = metas.get(0).select("span");
-			for (Element mSE : metaSpanEs) {
-				Date createTime = ParseHelper.parseDate(mSE.text());
-				if (createTime != null) {
-					c.setCreateTime(createTime);
-				} else if (mSE.text().matches("Gbit:\\s*\\d+")) {
-					c.setUserGbit(Integer.parseInt(mSE.text().replaceFirst("Gbit:\\s*", "")));
-				} else if (mSE.text().matches("STAR:\\s*\\d+")) {
-					c.setUserStar(Integer.parseInt(mSE.text().replaceFirst("STAR:\\s*", "")));
-				}
-				// Gbit, star
-			}
-
-			for (Element sE : metas.get(1).select("span")) {
-				if (sE.text().matches("#\\d+")) {
-					c.setFloor(Integer.parseInt(sE.text().replaceFirst("#", "")));
-					break;
-				}
-			}
-
-			c.setStar(Integer.parseInt(metas.get(1).select("span.star-count.meta").text()));
-
-			String content = cMain.selectFirst("div.mt-2.text-primary-700").select("span").text();
-			if (content != null) {
-				c.setContent(content.trim());
-			}
-
-			comments.add(c);
 		}
+	}
+
+	public static GeekHubComment parseComment(Element ce) {
+		GeekHubComment c = new GeekHubComment();
+		String cid = ce.id();
+		c.setId(cid.replaceFirst("comment_", ""));
+
+		Element cMain = ce.selectFirst("div.flex>div.action-list-parent");
+
+		Elements metas = cMain.select("div.flex>div.inline-flex");
+
+		Element userLink = metas.get(0).selectFirst("a[href^=/u/]");
+		c.setUser(ParseHelper.parseUserLink(userLink));
+
+		{
+			List<String> foo = new ArrayList<>();
+			Elements metalEs = metas.get(0).select("span>img");
+			for (Element mE : metalEs) {
+				foo.add(mE.attr("title"));
+			}
+			c.setUserMedal(foo.toArray(new String[0]));
+		}
+
+		Elements metaSpanEs = metas.get(0).select("span");
+		for (Element mSE : metaSpanEs) {
+			Date createTime = ParseHelper.parseDate(mSE.text());
+			if (createTime != null) {
+				c.setCreateTime(createTime);
+			} else if (mSE.text().matches("Gbit:\\s*\\d+")) {
+				c.setUserGbit(Integer.parseInt(mSE.text().replaceFirst("Gbit:\\s*", "")));
+			} else if (mSE.text().matches("STAR:\\s*\\d+")) {
+				c.setUserStar(Integer.parseInt(mSE.text().replaceFirst("STAR:\\s*", "")));
+			}
+			// Gbit, star
+		}
+
+		for (Element sE : metas.get(1).select("span")) {
+			if (sE.text().matches("#\\d+")) {
+				c.setFloor(Integer.parseInt(sE.text().replaceFirst("#", "")));
+				break;
+			}
+		}
+
+		c.setStar(Integer.parseInt(metas.get(1).select("span.star-count.meta").text()));
+
+		String content = cMain.selectFirst("div.mt-2.text-primary-700").select("span").text();
+		if (content != null) {
+			c.setContent(content.trim());
+		}
+		return c;
 	}
 
 }
