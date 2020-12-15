@@ -25,7 +25,7 @@ And If the session is expired, it will run again when processing some pages whic
 
 For custom cookies:
 ```java
-gh = GeekHubApi.builder()
+GeekHubApi gh = GeekHubApi.builder()
 		.httpHelper(HttpClientHelper.create(GeekHubApi.DEFAULT_URL_BASE, GeekHubApi.USER_AGENT))
 		.identityProvider(new GeekHubIdentityProvider() {
 			@Override
