@@ -45,10 +45,29 @@ boolean checkedIn = gh.checkIns();
 ### Fetch Posts
 
 ```java
-GeekHubApiResult<GeekHubPost> apiResult = gh.fetchPage(PageDefination.DEFAULT_POST, "2296");
+GeekHubApiResult<GeekHubPost> apiResult = gh.fetchPost(PageDefination.DEFAULT_POST, "2296");
 String poster = apiResult.getContent().getPoster();	// It will be '37丫37'
 ```
 ```java
-GeekHubApiResult<MoleculePost> apiResult = gh.fetchPage(PageDefination.MOLECULE, "1");
+GeekHubApiResult<MoleculePost> apiResult = gh.fetchPost(PageDefination.MOLECULE, "1");
 String title = apiResult.getContent().getTitle();// It will be '{ 活动队列，暂未开始 } GeekHub Launch！抢到楼层，这一箱 AirPods 2 就是你的了。'
+```
+
+### Fetch Users
+
+```java
+GeekHubApiResult<GeekHubUserProfile> apiResult = gh.fetchUserProfile("GM");
+```
+
+### Listener
+
+```java
+gh.addCableListener(update -> {
+	for(GeekHubPostItem item : update.getPosts()){
+		// do something
+	}
+	for(GeekHubComment comment : update.getComments()){
+		// do something
+	}
+});
 ```
