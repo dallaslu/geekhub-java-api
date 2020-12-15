@@ -266,7 +266,7 @@ public class GeekHubApi {
 
 	private void tryLogin() {
 		if (!this.identityProvider.isBusy()) {
-			List<Cookie> cookies = this.identityProvider.getCookie(this);
+			List<Cookie> cookies = this.identityProvider.getNewCookie(this);
 			if (cookies != null) {
 				this.httpHelper.addCookies(cookies);
 			}
@@ -326,7 +326,7 @@ public class GeekHubApi {
 	}
 
 	public void init() {
-		List<Cookie> cookies = this.identityProvider.tryLoadCookie(this);
+		List<Cookie> cookies = this.identityProvider.loadCookie(this);
 		if (cookies != null) {
 			this.httpHelper.addCookies(cookies);
 		}

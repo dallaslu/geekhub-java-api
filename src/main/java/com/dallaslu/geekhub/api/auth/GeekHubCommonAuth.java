@@ -37,7 +37,7 @@ public class GeekHubCommonAuth implements GeekHubIdentityProvider {
 	private final AtomicBoolean busy = new AtomicBoolean(false);
 
 	@Override
-	public List<Cookie> getCookie(GeekHubApi api) {
+	public List<Cookie> getNewCookie(GeekHubApi api) {
 		if (!busy.compareAndSet(false, true)) {
 			return null;
 		}
@@ -142,7 +142,7 @@ public class GeekHubCommonAuth implements GeekHubIdentityProvider {
 	}
 
 	@Override
-	public List<Cookie> tryLoadCookie(GeekHubApi geekHubApi) {
+	public List<Cookie> loadCookie(GeekHubApi geekHubApi) {
 		List<Cookie> cookies = loadCookies();
 		if (cookies != null && !cookies.isEmpty()) {
 			return cookies;
