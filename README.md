@@ -1,9 +1,11 @@
 # geekhub-java-api
 geekhub.com Java API 爬虫版
 
-## Usage
+## Depends
 
-(Java 8 and Lombok)
+(Java >8, Lombok, HttpClient, Slf4j)
+
+## Usage
 
 ### Create Instance
 
