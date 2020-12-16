@@ -21,11 +21,11 @@ public class GeekHubPage {
 	protected int myStar;
 	protected double myScore;
 
-	public void parse(Document doc) {
+	public void parse(Document doc, String url) {
 
-		Element titleP = doc.selectFirst("main>div>div.heading>p");
-		if (titleP != null) {
-			this.title = titleP.text();
+		Element titleE = doc.selectFirst("div.heading");
+		if (titleE != null) {
+			this.title = titleE.text();
 		}
 
 		Elements activitiesLinkSpan = doc.select("a[href=/activities]>span");

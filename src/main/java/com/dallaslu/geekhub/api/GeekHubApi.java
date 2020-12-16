@@ -202,8 +202,8 @@ public class GeekHubApi {
 		}
 		if (result != null) {
 			Document doc = Jsoup.parse(pageResult.getContent());
-			result.parse(doc);
-			return GeekHubApiResult.<T>builder().content(result).build();
+			result.parse(doc, url);
+			return GeekHubApiResult.<T>builder().content(result).success(true).build();
 		} else {
 			return GeekHubApiResult.<T>builder().build();
 		}
@@ -234,8 +234,8 @@ public class GeekHubApi {
 	 *            Post ID
 	 * @return 解析后的内容
 	 */
-	public <T extends GeekHubPost> GeekHubApiResult<T> fetchPost(PageDefination<T> pd, String postId) {
-		return this.fetchPost(pd, postId, 1);
+	public <T extends GeekHubPage> GeekHubApiResult<T> fetchPost(PageDefination<T> pd, String postId) {
+		return this.fetchPost(pd, postId, -1);
 	}
 
 	/**
@@ -249,9 +249,36 @@ public class GeekHubApi {
 	 *            页码
 	 * @return 解析后的内容
 	 */
-	public <T extends GeekHubPost> GeekHubApiResult<T> fetchPost(PageDefination<T> pd, String postId, int page) {
-		String url = String.format("%s/%s/%s", webUrlBase, pd.getSlug(), postId);
+	public <T extends GeekHubPage> GeekHubApiResult<T> fetchPost(PageDefination<T> pd, String postId, int page) {
+		String url = String.format("%s/%s/%s", webUrlBase, pd.getSlug(), postId + "?page=" + page);
 		return fetchPage(pd, url);
+	}
+
+	/**
+	 * 获取帖子列表
+	 * 
+	 * @param pd
+	 *            页面定义
+	 * @return 解析后的内容
+	 */
+	public <T extends GeekHubPage> GeekHubApiResult<GeekHubPostList> fetchPostList(PageDefination<T> pd) {
+		return this.fetchPostList(pd, 1);
+	}
+
+	/**
+	 * 获取帖子
+	 * 
+	 * @param pd
+	 *            页面定义
+	 * @param postId
+	 *            Post ID
+	 * @param page
+	 *            页码
+	 * @return 解析后的内容
+	 */
+	public <T extends GeekHubPage> GeekHubApiResult<GeekHubPostList> fetchPostList(PageDefination<T> pd, int page) {
+		String url = String.format("%s/%s", webUrlBase, pd.getSlug()) + (page <= 1 ? "" : ("?page=" + page));
+		return fetchPage(PageDefination.HOME, url);
 	}
 
 	/**
@@ -454,6 +481,7 @@ public class GeekHubApi {
 								send("{\"command\":\"subscribe\",\"identifier\":\"{\\\"channel\\\":\\\"ClassicChannel\\\"}\"}");
 								break;
 							case "ping":
+								break;
 							case "confirm_subscription":
 								log.info("recieve message: confirm_subscription");
 								break;

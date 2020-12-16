@@ -67,6 +67,8 @@ public class ParseHelper {
 				break;
 			default:
 			}
+		}else {
+			return null;
 		}
 		Date date = new Date(System.currentTimeMillis() - value * n * 1000L);
 		return date;

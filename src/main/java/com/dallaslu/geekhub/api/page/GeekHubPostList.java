@@ -1,5 +1,6 @@
 package com.dallaslu.geekhub.api.page;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -19,11 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 public class GeekHubPostList extends GeekHubPage {
-	private List<GeekHubPostItem> posts;
+	private List<GeekHubPostItem> posts = new ArrayList<>();
 
 	@Override
-	public void parse(Document doc) {
-		super.parse(doc);
+	public void parse(Document doc, String url) {
+		super.parse(doc, url);
 		Elements mainArticles = doc.select("main article");
 		for (Element article : mainArticles) {
 			GeekHubPostItem post = parsePostItem(article);

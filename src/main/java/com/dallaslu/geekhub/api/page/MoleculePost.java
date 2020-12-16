@@ -22,8 +22,8 @@ public class MoleculePost extends GeekHubPost {
 	private String[] luckyFloors;
 
 	@Override
-	public void parse(Document doc) {
-		super.parse(doc);
+	public void parse(Document doc, String url) {
+		super.parse(doc, url);
 		Elements boxes = doc.select("main>div");
 		Element articleE = boxes.get(0);
 		Elements specialEs = articleE.select("div.border>div.flex>div");

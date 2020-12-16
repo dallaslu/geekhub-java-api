@@ -33,8 +33,8 @@ public class GeekHubPost extends GeekHubPage {
 	protected List<GeekHubComment> comments;
 
 	@Override
-	public void parse(Document doc) {
-		super.parse(doc);
+	public void parse(Document doc, String url) {
+		super.parse(doc, url);
 
 		// poster
 		Elements boxes = doc.select("main>div");
@@ -82,7 +82,27 @@ public class GeekHubPost extends GeekHubPage {
 			}
 		}
 
-		Element commentE = boxes.get(1);
+		String type = "";
+		String postId = "";
+		{
+			Pattern p = Pattern.compile("https?://[^/]+/([^/]+)/(\\d+)(\\?.*)?$");
+			Matcher m = p.matcher(url);
+			if (m.find()) {
+				type = m.group(1);
+				postId = m.group(2);
+			}
+		}
+
+		String commentsElementId = null;
+		{
+			Pattern p = Pattern.compile("id=\"([\\w_]+-\\d+-comment-list)\"");
+			Matcher m = p.matcher(doc.html());
+			if (m.find()) {
+				commentsElementId = m.group(1);
+			}
+		}
+
+		Element commentE = doc.selectFirst("#" + commentsElementId);
 		Elements commentElements = commentE.selectFirst("div.flex").select("div span");
 
 		if (commentElements != null && commentElements.size() > 1) {
@@ -124,15 +144,17 @@ public class GeekHubPost extends GeekHubPage {
 
 		Elements metaSpanEs = metas.get(0).select("span");
 		for (Element mSE : metaSpanEs) {
-			Date createTime = ParseHelper.parseDate(mSE.text());
+			String text = mSE.text();
+			Date createTime = ParseHelper.parseDate(text);
 			if (createTime != null) {
 				c.setCreateTime(createTime);
-			} else if (mSE.text().matches("Gbit:\\s*\\d+")) {
-				c.setUserGbit(Integer.parseInt(mSE.text().replaceFirst("Gbit:\\s*", "")));
-			} else if (mSE.text().matches("STAR:\\s*\\d+")) {
-				c.setUserStar(Integer.parseInt(mSE.text().replaceFirst("STAR:\\s*", "")));
+			} else if (text.matches("Gbit:\\s*\\d+")) {
+				c.setUserGbit(Integer.parseInt(text.replaceFirst("Gbit:\\s*", "")));
+			} else if (text.matches("Star:\\s*\\d+")) {
+				c.setUserStar(Integer.parseInt(text.replaceFirst("Star:\\s*", "")));
+			} else if (text.matches("via \\s*.*")) {
+				c.setVia(text.replaceFirst("via \\s*", ""));
 			}
-			// Gbit, star
 		}
 
 		for (Element sE : metas.get(1).select("span")) {

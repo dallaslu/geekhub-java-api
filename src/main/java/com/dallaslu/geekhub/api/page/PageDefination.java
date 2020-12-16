@@ -21,7 +21,7 @@ public class PageDefination<T extends GeekHubPage> {
 	public static final PageDefination<GeekHubPost> GROUP_BUY = register("GroupBuy", "group_buys", "拼车",
 			GeekHubPost.class);
 	public static final PageDefination<GeekHubPost> PRODUCT = register("Product", "products", "商品", GeekHubPost.class);
-	public static final PageDefination<GeekHubPost> SERVICE = register("Service", "service", "服务", GeekHubPost.class);
+	public static final PageDefination<GeekHubPost> SERVICE = register("Service", "services", "服务", GeekHubPost.class);
 	public static final PageDefination<GeekHubPost> WORK = register("Work", "works", "产品", GeekHubPost.class);
 	public static final PageDefination<GeekHubPost> CLUB = register("Club", "club", "小组", GeekHubPost.class);
 	public static final PageDefination<GeekHubProductList> GBIT_STORE = register("GbitStore", "gbit_store", "福利社",

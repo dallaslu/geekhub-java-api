@@ -11,12 +11,7 @@ import lombok.Getter;
 public class GeekHubApiResult<T> {
 	private boolean success;
 	private String raw;
-	private int totalPage;
 	private boolean logon;
-	private int myGbit;
-	private int myStar;
-	private int myScore;
-	private int notify;
 	private T content;
 	private boolean deleted;
 }
