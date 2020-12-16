@@ -82,7 +82,9 @@ public class GeekHubPost extends GeekHubPage {
 			}
 		}
 
+		@SuppressWarnings("unused")
 		String type = "";
+		@SuppressWarnings("unused")
 		String postId = "";
 		{
 			Pattern p = Pattern.compile("https?://[^/]+/([^/]+)/(\\d+)(\\?.*)?$");
@@ -127,7 +129,9 @@ public class GeekHubPost extends GeekHubPage {
 		c.setId(cid.replaceFirst("comment_", ""));
 
 		Element cMain = ce.selectFirst("div.flex>div.action-list-parent");
-
+		if (cMain == null) {
+			return null;
+		}
 		Elements metas = cMain.select("div.flex>div.inline-flex");
 
 		Element userLink = metas.get(0).selectFirst("a[href^=/u/]");
