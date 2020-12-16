@@ -13,8 +13,8 @@ public class GeekHubUserProfile extends GeekHubPage {
 	private String telegram;
 
 	@Override
-	public void parse(Document doc) {
-		super.parse(doc);
+	public void parse(Document doc, String url) {
+		super.parse(doc, url);
 		Element userInfoE = doc.selectFirst("main>div.box");
 		if (userInfoE == null) {
 			return;
