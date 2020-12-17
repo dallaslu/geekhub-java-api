@@ -1,14 +1,13 @@
 package com.dallaslu.geekhub.api.auth;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +20,7 @@ import org.apache.http.cookie.Cookie;
 import com.dallaslu.geekhub.api.CsrfData;
 import com.dallaslu.geekhub.api.GeekHubApi;
 import com.dallaslu.geekhub.api.utils.ParseHelper;
+import com.dallaslu.utils.captcha.CaptchaResolver;
 import com.dallaslu.utils.http.HttpHelper.ResponseResult;
 
 import lombok.Builder;
@@ -35,45 +35,26 @@ public class GeekHubCommonAuth implements GeekHubIdentityProvider {
 	private String username;
 	private String password;
 	private String dataPath;
+	@Builder.Default
+	private boolean loginImmediately = false;
 	private final AtomicBoolean busy = new AtomicBoolean(false);
+
+	@Builder.Default
+	private CaptchaResolver captchaResolver = new DefaultCaptchaResolver();
 
 	@Override
 	public List<Cookie> getNewCookie(GeekHubApi api) {
 		if (!busy.compareAndSet(false, true)) {
 			return null;
 		}
+		final List<Cookie> cookies = new ArrayList<>();
 		ResponseResult<String> result = api.fetchPage("/users/sign_in", false);
 		if (result.isSuccess() && result.getStatus() == HttpStatus.SC_OK) {
 			CsrfData csrfData = ParseHelper.parseCsrfData(result.getContent());
-
-			String fileName = UUID.randomUUID().toString() + ".jpg";
-			try {
-				api.getHttpHelper().download(api.getWebUrlBase() + "/rucaptcha/", fileName,
-						dataPath + File.separator + "tmp/");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			File captchaImage = new File(dataPath + File.separator + "tmp/" + File.separator + fileName);
-			log.info("captcha image: " + captchaImage.getPath(),
-					", please revole the value to " + fileName + ".txt int the same folder.");
-
-			String captcha = null;
-			for (int i = 0; i < 60 * 10; i++) {
-				try {
-					Thread.sleep(1000);
-					File captchaValue = new File(
-							dataPath + File.separator + "tmp/" + File.separator + fileName + ".txt");
-					if (captchaValue.exists()) {
-						captcha = new BufferedReader(new FileReader(captchaValue)).readLine();
-						break;
-					}
-				} catch (InterruptedException | IOException e) {
-					e.printStackTrace();
-					break;
+			this.captchaResolver.resolve("Login Captcha", "Please input the captcha value in a few minutes", captcha -> {
+				if (captcha == null) {
+					return false;
 				}
-			}
-
-			if (captcha != null) {
 				log.info("Starting post sign in form..." + captcha);
 				Map<String, Object> param = new HashMap<>();
 				param.put(csrfData.getCsrfParam(), csrfData.getCsrfToken());
@@ -88,13 +69,33 @@ public class GeekHubCommonAuth implements GeekHubIdentityProvider {
 						+ ".*\">redirected</a>.</body></html>")) {
 					// success
 					api.setLogon(true);
-					List<Cookie> cookies = api.getHttpHelper().getCookies();
-					// 处理 cookie;t
+					List<Cookie> _cookies = api.getHttpHelper().getCookies();
+					// 处理 cookie
 					writeCookies(api.getHttpHelper().getCookies());
+					cookies.addAll(_cookies);
 					this.busy.compareAndSet(true, false);
-					return cookies;
+					return true;
 				} else {
+					return false;
 				}
+			}, () -> {
+				String fileName = UUID.randomUUID().toString() + ".jpg";
+				try {
+					api.getHttpHelper().download(api.getWebUrlBase() + "/rucaptcha/", fileName,
+							dataPath + File.separator + "tmp/");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				File captchaImage = new File(dataPath + File.separator + "tmp/" + File.separator + fileName);
+				return captchaImage;
+			});
+		}
+		while (cookies.isEmpty()) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				break;
 			}
 		}
 		this.busy.compareAndSet(true, false);
@@ -147,6 +148,10 @@ public class GeekHubCommonAuth implements GeekHubIdentityProvider {
 		List<Cookie> cookies = loadCookies();
 		if (cookies != null && !cookies.isEmpty()) {
 			return cookies;
+		}
+		
+		if(loginImmediately) {
+			return getNewCookie(geekHubApi);
 		}
 		return null;
 	}
