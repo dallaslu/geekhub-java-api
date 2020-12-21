@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GeekHubApi {
 
 	public static final String VERSION = "0.0.1";
-	private static final String GITHUB_URL = "https://github.com/dallslu/geekhub-java-api";
+	private static final String GITHUB_URL = "https://github.com/dallaslu/geekhub-java-api";
 	public static final String GEEKHUB_DOMAIN = "www.geekhub.com";
 	public static final String USER_AGENT = "GeekHub-Java/" + VERSION + " (+" + GITHUB_URL + ")";
 	public static final String DEFAULT_URL_BASE = "https://" + GEEKHUB_DOMAIN;
